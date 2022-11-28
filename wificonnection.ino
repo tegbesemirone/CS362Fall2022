@@ -22,16 +22,21 @@ char auth[] = BLYNK_AUTH_TOKEN;
 
 // Your WiFi credentials.
 // Set password to "" for open networks.
-char ssid[] = "Oritsematosan's iPhone";
-char pass[] = "tosan2000";
-
+char ssid[] = "ARRIS-1D45";
+char pass[] = "236005282435";
+String sensorVal;
+float values[5];
 BlynkTimer timer;
 
 // This function is called every time the Virtual Pin 0 state changes
 BLYNK_WRITE(V0)
 {
+  if (Serial.available() > 0) {
+    sensorVal = Serial.readStringUntil('\n');
+    Serial.println("Signal Received");
+  }
   // Set incoming value from pin V0 to a variable
-  int value = param.asInt();
+  String value = param.asStr();;
 
   // Update state
   Blynk.virtualWrite(V1, value);
@@ -49,8 +54,30 @@ BLYNK_CONNECTED()
 // This function sends Arduino's uptime every second to Virtual Pin 2.
 void myTimerEvent()
 {
+  if (Serial.available() > 0) {
+      sensorVal = Serial.readStringUntil('\n');
+      Serial.println(sensorVal);
+    }
+  Blynk.virtualWrite(V0, sensorVal);
+  String working = sensorVal;
+  String val = "";
+  int index = 0;
+  for( index; index < 5; index++ ) {
+    val = sensorVal.substring(0, sensorVal.indexOf('$'));
+    values[index] = val.toFloat();
+    sensorVal = sensorVal.substring(sensorVal.indexOf('$')+1);
+    //index = index + 1;
+  }
+  
   // You can send any value at any time.
   // Please don't send more that 10 values per second.
+  float val4 = values[0];
+  float val3 = values[1];
+  float val5 = values[2];
+  Blynk.virtualWrite(V4, val4);
+  Blynk.virtualWrite(V3, val3);
+  Blynk.virtualWrite(V5, val5);
+  
   Blynk.virtualWrite(V2, millis() / 1000);
 }
 
@@ -70,6 +97,11 @@ void setup()
 
 void loop()
 {
+  if (Serial.available() > 0) {
+    sensorVal = Serial.readStringUntil('\n');
+    Serial.println("Signal Received");
+  }
+  
   Blynk.run();
   timer.run();
   // You can inject your own code or combine it with other sketches.
